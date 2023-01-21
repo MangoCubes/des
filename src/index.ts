@@ -1,8 +1,6 @@
 
 // Array of 0 / 1s have been chosen in order to be more explicit instead of using ArrayBuffer or Buffer
 type Bit = 0 | 1;
-type LeftHalf = [Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit];
-type RightHalf = LeftHalf;
 
 /**
  * Initial Permutation mapping
@@ -141,3 +139,46 @@ const PC2 = [
  */
 const Rotations = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2];
 
+/**
+ * Accepts array of bits and a map, and outputs the result after mapping the bits according to the given mapping
+ */
+function applyMapping(bits: Bit[], mapping: number[]){
+	const ret: Bit[] = [];
+	for(let i = 0; i < mapping.length; i++) ret.push(bits[mapping[i]]);
+	return ret;
+}
+
+/**
+ * Accepts a full block of plaintext/ciphertext, and applies initial permutation on it
+ */
+function initialPermutation(bits: Bit[]){
+	return applyMapping(bits, IP);
+}
+
+/**
+ * Accepts a full block of plaintext/ciphertext, and applies inverse of initial permutation on it
+ */
+ function inverseInitialPermutation(bits: Bit[]){
+	return applyMapping(bits, InverseIP);
+}
+
+/**
+ * Accepts a 32-bit message, and expands it to 48-bit table by applying Expansion-Permutation function
+ */
+function expansionPermutation(bits: Bit[]){
+	return applyMapping(bits, ExpansionPermutation);
+}
+
+/**
+ * Accepts two bit array of same length, and outputs its bitwise XOR
+ */
+function xor(a: Bit[], b: Bit[]){
+	const ret: Bit[] = [];
+	if (a.length !== b.length) throw new Error('Cannot XOR two bit arrays with different length');
+	for(let i = 0; i < a.length; i++) {
+		// Can't use ^ to pass type checking
+		if((a[i] === 0 && b[i] === 1) || (a[i] === 1 && b[i] === 0)) ret.push(1);
+		else ret.push(0);
+	}
+	return ret;
+}
