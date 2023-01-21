@@ -170,6 +170,20 @@ function expansionPermutation(bits: Bit[]){
 }
 
 /**
+ * Accepts a 64-bit key, and applies permuted choice 1 on it
+ */
+function permutedChoice1(bits: Bit[]){
+	return applyMapping(bits, PC1);
+}
+
+/**
+ * Accepts a 56-bit shifted key, and reduces it to subkey using permuted choice 2
+ */
+function permutedChoice2(bits: Bit[]){
+	return applyMapping(bits, PC2);
+}
+
+/**
  * Accepts two bit array of same length, and outputs its bitwise XOR
  */
 function xor(a: Bit[], b: Bit[]){
@@ -181,4 +195,39 @@ function xor(a: Bit[], b: Bit[]){
 		else ret.push(0);
 	}
 	return ret;
+}
+
+/**
+ * Execute left shift by a given amount of positions.
+ * @param original The bit array before shifting
+ * @param by Number of positions to shift
+ * @returns Shifted array
+ */
+function shiftBits(original: Bit[], by: number){
+	const ret: Bit[] = [];
+	for(let i = 0; i < original.length; i++) {
+		ret.push(original[(i + by) % original.length]);
+	}
+	return ret;
+}
+
+/**
+ * Generates subkey based on the original master key.
+ * @param original The master key to encrypt/decrypt this message with
+ * @param keyNumber The round number this key will be used for. Note that for the first encryption round, the keyNumber will be 0, as per 'Index starts with 0'.
+ */
+function genKey(original: Bit[], keyNumber: number){
+	const leftHalf = original.slice(0, 28);
+	const rightHalf = original.slice(28);
+	// Calculates how many shifts are needed by getting part of the Rotations array, and calculating the sum of all elements in it
+	const shiftAmount = Rotations.slice(0, keyNumber + 1).reduce((prev, current) => prev + current, 0);
+	const leftShifted = shiftBits(leftHalf, shiftAmount);
+	const rightShifted = shiftBits(rightHalf, shiftAmount);
+	return permutedChoice2([...leftShifted, ...rightShifted]);
+}
+
+function round(input: Bit[], subKey: Bit[]){
+	// Left half after a single round is the same as the right half of the input
+	const ret = input.slice(32);
+
 }
