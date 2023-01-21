@@ -226,6 +226,48 @@ function genKey(original: Bit[], keyNumber: number){
 	return permutedChoice2([...leftShifted, ...rightShifted]);
 }
 
+/**
+ * Converts a number into binary format
+ */
+function intToBin(n: number){
+	const ret: Bit[] = [];
+	while(n){
+		ret.push(n % 2 as Bit);
+		n = Math.floor(n / 2);
+	}
+	ret.reverse();
+	return ret;
+}
+
+/**
+ * Calculates the 32-bit output of the Substitution/choice function based on 48-bit input
+ * @param input 48-bit input that needs to be substituted using S-box
+ */
+function applySBox(input: Bit[]){
+	const res: Bit[] = [];
+	for(let i = 0; i < 8; i++){
+		const tableRow = i * 6;
+		// Calculates which row to read by getting the first and last bit in the ith row
+		const row = input[tableRow] * 2 + input[tableRow + 5];
+		const column = input[tableRow + 1] * 8 + input[tableRow + 2] * 4 + input[tableRow + 3] * 2 + input[tableRow + 4];
+		const substituted = SBox[i][row * 16 + column];
+		res.concat(intToBin(substituted));
+	}
+	return res;
+}
+
+/**
+ * Calculates the output of the function F in Feistel cipher model
+ * @param right Right half of the previous round output
+ * @param subkey Subkey to be used in this round
+ */
+function functionF(right: Bit[], subkey: Bit[]){
+	const expanded = expansionPermutation(right);
+	const xored = xor(expanded, subkey);
+	const substituted = applySBox(xored);
+
+}
+
 function round(input: Bit[], subKey: Bit[]){
 	// Left half after a single round is the same as the right half of the input
 	const ret = input.slice(32);
