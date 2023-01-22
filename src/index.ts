@@ -309,3 +309,25 @@ function encrypt(input: Bit[], key: Bit[]){
 function decrypt(input: Bit[], key: Bit[]){
 	return DESAlgorithm(input, key, true);
 }
+
+/**
+ * Converts hexadecimal string into binary
+ * @param hex Hexadecimal string, may be in uppercase or lowercase
+ * @returns Binary array of the hexadecimal string
+ */
+function convertHexToBin(hex: string){
+	const res: Bit[] = [];
+	for(const c of hex){
+		let ascii = c.charCodeAt(0);
+		if (ascii < 58) {
+			const bin = intToBin(ascii - 48);
+			while(res.length < 4) bin.unshift(0);
+			res.push(...bin);
+		}
+		else {
+			if (ascii > 96) ascii -= 32;
+			res.push(...intToBin(ascii - 55));
+		}
+	}
+	return res;
+}
