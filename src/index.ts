@@ -132,7 +132,14 @@ const PC2 = [
 	41, 52, 31, 37, 47, 55, 30, 40,
 	51, 45, 33, 48, 44, 49, 39, 56,
 	34, 53, 46, 42, 50, 36, 29, 32
-]
+];
+
+const P = [
+	16,  7, 20, 21, 29, 12, 28, 17,
+	 1, 15, 23, 26,  5, 18, 31, 10,
+	 2,  8, 24, 14, 32, 27,  3,  9,
+	19, 13, 30,  6, 22, 11,  4, 25
+];
 
 /**
  * Number of bits to left-shift to generate a subkey
@@ -181,6 +188,10 @@ function permutedChoice1(bits: Bit[]){
  */
 function permutedChoice2(bits: Bit[]){
 	return applyMapping(bits, PC2);
+}
+
+function permutation(bits: Bit[]){
+	return applyMapping(bits, P);
 }
 
 /**
@@ -251,7 +262,9 @@ function applySBox(input: Bit[]){
 		const row = input[tableRow] * 2 + input[tableRow + 5];
 		const column = input[tableRow + 1] * 8 + input[tableRow + 2] * 4 + input[tableRow + 3] * 2 + input[tableRow + 4];
 		const substituted = SBox[i][row * 16 + column];
-		res.concat(intToBin(substituted));
+		const bin = intToBin(substituted);
+		while(bin.length < 4) bin.unshift(0);
+		res.push(...bin);
 	}
 	return res;
 }
@@ -265,7 +278,7 @@ function functionF(right: Bit[], subkey: Bit[]){
 	const expanded = expansionPermutation(right);
 	const xored = xor(expanded, subkey);
 	const substituted = applySBox(xored);
-	return permutedChoice2(substituted);
+	return permutation(substituted);
 }
 
 /**
