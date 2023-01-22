@@ -391,8 +391,15 @@ function decrypt(input: string, key: string){
 }
 
 // This example has been taken from Cryptography and Network Security 6th GLOBAL edition, page 94.
-// Output should be 'da02ce3a89ecac3b'
+// Output should be 'da02ce3a89ecac3b'.
 console.log(encrypt('02468aceeca86420', '0f1571c947d9e859'));
 
 // Output shoulf be '02468aceeca86420', the original text
 console.log(decrypt('da02ce3a89ecac3b', '0f1571c947d9e859'));
+
+// This example has been taken from https://page.math.tu-berlin.de/~kant/teaching/hess/krypto-ws2006/des.htm
+// Output should be '85e813540f0ab405'.
+console.log(encrypt('0123456789ABCDEF', '133457799BBCDFF1'));
+
+// Output should be '0123456789abcdef'.
+console.log(decrypt('85E813540F0AB405', '133457799BBCDFF1'));
