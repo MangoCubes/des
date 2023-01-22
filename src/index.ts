@@ -1,5 +1,7 @@
-
-// Array of 0 / 1s have been chosen in order to be more explicit instead of using ArrayBuffer or Buffer
+/**
+ * Type that represents a single bit
+ * Array of 0 / 1s have been chosen in order to be more explicit instead of using ArrayBuffer or Buffer
+ */
 type Bit = 0 | 1;
 
 /**
@@ -61,6 +63,7 @@ const SBoxPermutation = [
 
 /**
  * S-boxes for each row of E/P output
+ * Each element in SBox array represents a single S-box
  */
 const SBox = [
 	[
@@ -139,6 +142,9 @@ const PC2 = [
 	34, 53, 46, 42, 50, 36, 29, 32
 ];
 
+/**
+ * Permutation after S-box to get the final function F result
+ */
 const P = [
 	16,  7, 20, 21, 29, 12, 28, 17,
 	 1, 15, 23, 26,  5, 18, 31, 10,
@@ -152,7 +158,10 @@ const P = [
 const Rotations = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1];
 
 /**
- * Accepts array of bits and a map, and outputs the result after mapping the bits according to the given mapping
+ * Applies a certain mapping to a bit array
+ * @param bits The bit array before mapping
+ * @param mapping The mapping to apply on the bits
+ * @returns The bits after moving (or copying, in case of E/P and similar) them around
  */
 function applyMapping(bits: Bit[], mapping: number[]){
 	const ret: Bit[] = [];
@@ -161,46 +170,64 @@ function applyMapping(bits: Bit[], mapping: number[]){
 }
 
 /**
- * Accepts a full block of plaintext/ciphertext, and applies initial permutation on it
+ * Applies initial permutation
+ * @param bits A 64-bit plaintext/ciphertext block
+ * @returns The output of initial permutation
  */
 function initialPermutation(bits: Bit[]){
 	return applyMapping(bits, IP);
 }
 
 /**
- * Accepts a full block of plaintext/ciphertext, and applies inverse of initial permutation on it
+ * Applies the inverse of the initial permutation
+ * @param bits A 64-bit preoutput
+ * @returns The output of the inverse of initial permutation
  */
  function inverseInitialPermutation(bits: Bit[]){
 	return applyMapping(bits, InverseIP);
 }
 
 /**
- * Accepts a 32-bit message, and expands it to 48-bit table by applying Expansion-Permutation function
+ * Applies expansion/permutation, the function used in the first part of the function F
+ * @param bits 32-bit right half of the input to this round
+ * @returns The 48-bit expanded output
  */
 function expansionPermutation(bits: Bit[]){
 	return applyMapping(bits, ExpansionPermutation);
 }
 
 /**
- * Accepts a 64-bit key, and applies permuted choice 1 on it
+ * Applies permuted choice 1 on the original key before shifting
+ * @param bits The 64-bit key
+ * @returns 56-bit permuted key
  */
 function permutedChoice1(bits: Bit[]){
 	return applyMapping(bits, PC1);
 }
 
 /**
- * Accepts a 56-bit shifted key, and reduces it to subkey using permuted choice 2
+ * Applies permuted choice 2 on the shifted key to get the subkey
+ * @param bits The 56-bit key after shifting
+ * @returns The 48-bit key
  */
 function permutedChoice2(bits: Bit[]){
 	return applyMapping(bits, PC2);
 }
 
+/**
+ * Applies the permutation on the output of the S-box to get the result of the function F
+ * @param bits The 32-bit S-box output
+ * @returns The 32-bit output of the function F
+ */
 function permutation(bits: Bit[]){
 	return applyMapping(bits, P);
 }
 
 /**
- * Accepts two bit array of same length, and outputs its bitwise XOR
+ * Calculate XOR of the two bit array. Must be of same length to work.
+ * @param a First bit array
+ * @param b Second bit array
+ * @returns XOR of a and b
  */
 function xor(a: Bit[], b: Bit[]){
 	const ret: Bit[] = [];
@@ -231,6 +258,7 @@ function shiftBits(original: Bit[], by: number){
  * Generates subkey based on the original master key.
  * @param original The master key to encrypt/decrypt this message with
  * @param keyNumber The round number this key will be used for. Note that for the first encryption round, the keyNumber will be 0, as per 'Index starts with 0'.
+ * @returns The subkey for this round
  */
 function genKey(original: Bit[], keyNumber: number){
 	const leftHalf = original.slice(0, 28);
@@ -243,7 +271,9 @@ function genKey(original: Bit[], keyNumber: number){
 }
 
 /**
- * Converts a number into binary format
+ * Converts a single number to binary array
+ * @param n Decimal integer
+ * @returns Corresponding binary array
  */
 function intToBin(n: number){
 	const ret: Bit[] = [];
@@ -258,6 +288,7 @@ function intToBin(n: number){
 /**
  * Calculates the 32-bit output of the Substitution/choice function based on 48-bit input
  * @param input 48-bit input that needs to be substituted using S-box
+ * @returns 32-bit output after substitution/choice
  */
 function applySBox(input: Bit[]){
 	const res: Bit[] = [];
@@ -278,6 +309,7 @@ function applySBox(input: Bit[]){
  * Calculates the output of the function F in Feistel cipher model
  * @param right Right half of the previous round output
  * @param subkey Subkey to be used in this round
+ * @returns The 32-bit output of the function F
  */
 function functionF(right: Bit[], subkey: Bit[]){
 	const expanded = expansionPermutation(right);
@@ -288,9 +320,9 @@ function functionF(right: Bit[], subkey: Bit[]){
 
 /**
  * Calculates the state after applying a single round of encryption/decryption
- * @param input The input to this round
- * @param subKey The subkey that will be used for this round
- * @returns The result after applying a single round to the input
+ * @param input The 64-bit input to this round
+ * @param subKey The 48-bit subkey that will be used for this round
+ * @returns The 64-bit result after applying a single round to the input
  */
 function singleRound(input: Bit[], subKey: Bit[]){
 	// Left half after a single round is the same as the right half of the input
@@ -302,11 +334,20 @@ function singleRound(input: Bit[], subKey: Bit[]){
 
 /**
  * Swap two halves around
+ * @param input 64-bit binary array
+ * @returns 64-bit binary array with the first half and the second half swapped around
  */
 function swap(input: Bit[]){
 	return [...input.slice(32), ...input.slice(0, 32)];
 }
 
+/**
+ * Encrypt/decrypt the input using the key
+ * @param input 64-bit plaintext/ciphertext
+ * @param key 64-bit key to encrypt/decrypt the input with
+ * @param isDecryption If true, this will decrypt the input instead of encrypting it
+ * @returns The 64-bit plaintext/ciphertext, depending on whether isDecryption was true or not
+ */
 function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
 	let current = initialPermutation(input);
 	key = permutedChoice1(key);
@@ -314,9 +355,11 @@ function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
 		const output = binToHex(current);
 		console.log(`After initial permutation: ${output.slice(0, 8)} ${output.slice(8)}`);
 	}
+	// Determines in which order the subkey should be generated in
 	const keyOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 	// Note that difference between encryption and decryption is that key usage is reversed
 	if(isDecryption) keyOrder.reverse();
+	// This variable exists purely for verbose output
 	let count = 1;
 	for(const round of keyOrder){
 		const subKey = genKey(key, round);
@@ -329,8 +372,10 @@ function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
 		}
 		count++;
 	}
+	// The output of round 16 needs to be swapped around to be preoutput
 	current = swap(current);
 	if(verbose) console.log(`\nPreoutput: ${binToHex(current)}`);
+	// Inverse of IP is applied just before getting the final output
 	return inverseInitialPermutation(current);
 }
 
