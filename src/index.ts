@@ -3,6 +3,11 @@
 type Bit = 0 | 1;
 
 /**
+ * If true, output will be very verbose
+ */
+const verbose = true;
+
+/**
  * Initial Permutation mapping
  */
 const IP = [
@@ -304,12 +309,22 @@ function swap(input: Bit[]){
 
 function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
 	let current = initialPermutation(input);
+	if(verbose){
+		const output = binToHex(current);
+		console.log(`After initial permutation: ${output.slice(0, 8)} ${output.slice(8)}`);
+	}
 	const keyOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 	// Note that difference between encryption and decryption is that key usage is reversed
 	if(isDecryption) keyOrder.reverse();
+	let count = 1;
 	for(const round of keyOrder){
 		const subKey = genKey(key, round);
+		if(verbose) {
+			console.log(`\nRound ${count}`);
+			console.log(`Subkey used for this round: ${binToHex(subKey)}`);
+		}
 		current = singleRound(current, subKey);
+		count++;
 	}
 	current = swap(current);
 	return inverseInitialPermutation(current);
@@ -337,6 +352,11 @@ function hexToBin(hex: string){
 	return res;
 }
 
+/**
+ * Converts binary array to hexadecimal
+ * @param bit Binary array
+ * @returns Hexadecimal corresponding to the input in lowercase
+ */
 function binToHex(bit: Bit[]){
 	const output: string[] = [];
 	for(let i = 0; i < bit.length; i += 4){
