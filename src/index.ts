@@ -265,11 +265,47 @@ function functionF(right: Bit[], subkey: Bit[]){
 	const expanded = expansionPermutation(right);
 	const xored = xor(expanded, subkey);
 	const substituted = applySBox(xored);
-
+	return permutedChoice2(substituted);
 }
 
-function round(input: Bit[], subKey: Bit[]){
+/**
+ * Calculates the state after applying a single round of encryption/decryption
+ * @param input The input to this round
+ * @param subKey The subkey that will be used for this round
+ * @returns The result after applying a single round to the input
+ */
+function singleRound(input: Bit[], subKey: Bit[]){
 	// Left half after a single round is the same as the right half of the input
-	const ret = input.slice(32);
+	const right = input.slice(32);
+	const functionFOutput = functionF(right, subKey);
+	const xored = xor(input.slice(0, 32), functionFOutput);
+	return [...right, ...xored] as Bit[];
+}
 
+/**
+ * Swap two halves around
+ */
+function swap(input: Bit[]){
+	return [...input.slice(32), ...input.slice(0, 32)];
+}
+
+function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
+	let current = initialPermutation(input);
+	const keyOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+	// Note that difference between encryption and decryption is that key usage is reversed
+	if(isDecryption) keyOrder.reverse();
+	for(const round of keyOrder){
+		const subKey = genKey(key, round);
+		current = singleRound(current, subKey);
+	}
+	current = swap(current);
+	return inverseInitialPermutation(current);
+}
+
+function encrypt(input: Bit[], key: Bit[]){
+	return DESAlgorithm(input, key, false);
+}
+
+function decrypt(input: Bit[], key: Bit[]){
+	return DESAlgorithm(input, key, true);
 }
