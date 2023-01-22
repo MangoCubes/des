@@ -320,14 +320,17 @@ function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
 	let count = 1;
 	for(const round of keyOrder){
 		const subKey = genKey(key, round);
+		current = singleRound(current, subKey);
 		if(verbose) {
 			console.log(`\nRound ${count}`);
 			console.log(`Subkey used for this round: ${binToHex(subKey)}`);
+			const output = binToHex(current);
+			console.log(`Output of round ${count}: ${output.slice(0, 8)} ${output.slice(8)}`);
 		}
-		current = singleRound(current, subKey);
 		count++;
 	}
 	current = swap(current);
+	if(verbose) console.log(`\nPreoutput: ${binToHex(current)}`);
 	return inverseInitialPermutation(current);
 }
 
@@ -367,15 +370,29 @@ function binToHex(bit: Bit[]){
 	return output.join('');
 }
 
+/**
+ * Encrypt a 64-bit hexadecimal input with 64-bit key
+ * @param input 64-bit plaintext
+ * @param key 64-bit key
+ * @returns 64-bit ciphertext
+ */
 function encrypt(input: string, key: string){
 	return binToHex(DESAlgorithm(hexToBin(input), hexToBin(key), false));
 }
 
+/**
+ * Decrypt a 64-bit hexadecimal input with 64-bit key
+ * @param input 64-bit ciphertext
+ * @param key 64-bit key
+ * @returns 64-bit plaintext
+ */
 function decrypt(input: string, key: string){
 	return binToHex(DESAlgorithm(hexToBin(input), hexToBin(key), true));
 }
 
+// This example has been taken from Cryptography and Network Security 6th GLOBAL edition, page 94.
 // Output should be 'da02ce3a89ecac3b'
 console.log(encrypt('02468aceeca86420', '0f1571c947d9e859'));
 
+// Output shoulf be '02468aceeca86420', the original text
 console.log(decrypt('da02ce3a89ecac3b', '0f1571c947d9e859'));
