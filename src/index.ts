@@ -144,7 +144,7 @@ const Rotations = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2];
  */
 function applyMapping(bits: Bit[], mapping: number[]){
 	const ret: Bit[] = [];
-	for(let i = 0; i < mapping.length; i++) ret.push(bits[mapping[i]]);
+	for(let i = 0; i < mapping.length; i++) ret.push(bits[mapping[i] - 1]);
 	return ret;
 }
 
@@ -302,26 +302,18 @@ function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
 	return inverseInitialPermutation(current);
 }
 
-function encrypt(input: Bit[], key: Bit[]){
-	return DESAlgorithm(input, key, false);
-}
-
-function decrypt(input: Bit[], key: Bit[]){
-	return DESAlgorithm(input, key, true);
-}
-
 /**
  * Converts hexadecimal string into binary
  * @param hex Hexadecimal string, may be in uppercase or lowercase
  * @returns Binary array of the hexadecimal string
  */
-function convertHexToBin(hex: string){
+function hexToBin(hex: string){
 	const res: Bit[] = [];
 	for(const c of hex){
 		let ascii = c.charCodeAt(0);
 		if (ascii < 58) {
 			const bin = intToBin(ascii - 48);
-			while(res.length < 4) bin.unshift(0);
+			while(bin.length < 4) bin.unshift(0);
 			res.push(...bin);
 		}
 		else {
@@ -331,3 +323,14 @@ function convertHexToBin(hex: string){
 	}
 	return res;
 }
+
+function encrypt(input: string, key: string){
+	return DESAlgorithm(hexToBin(input), hexToBin(key), false);
+}
+
+function decrypt(input: string, key: string){
+	return DESAlgorithm(hexToBin(input), hexToBin(key), true);
+}
+
+// Output should be 'da02ce3a89ecac3b'
+console.log(encrypt('02468aceeca86420', '0f1571c947d9e859'));
