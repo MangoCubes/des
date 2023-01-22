@@ -337,12 +337,21 @@ function hexToBin(hex: string){
 	return res;
 }
 
+function binToHex(bit: Bit[]){
+	const output: string[] = [];
+	for(let i = 0; i < bit.length; i += 4){
+		const val = bit[i] * 8 + bit[i + 1] * 4 + bit[i + 2] * 2 + bit[i + 3];
+		output.push(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'][val]);
+	}
+	return output.join('');
+}
+
 function encrypt(input: string, key: string){
-	return DESAlgorithm(hexToBin(input), hexToBin(key), false);
+	return binToHex(DESAlgorithm(hexToBin(input), hexToBin(key), false));
 }
 
 function decrypt(input: string, key: string){
-	return DESAlgorithm(hexToBin(input), hexToBin(key), true);
+	return binToHex(DESAlgorithm(hexToBin(input), hexToBin(key), true));
 }
 
 // Output should be 'da02ce3a89ecac3b'
