@@ -149,7 +149,7 @@ const P = [
 /**
  * Number of bits to left-shift to generate a subkey
  */
-const Rotations = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2];
+const Rotations = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1];
 
 /**
  * Accepts array of bits and a map, and outputs the result after mapping the bits according to the given mapping
@@ -309,6 +309,7 @@ function swap(input: Bit[]){
 
 function DESAlgorithm(input: Bit[], key: Bit[], isDecryption: boolean){
 	let current = initialPermutation(input);
+	key = permutedChoice1(key);
 	if(verbose){
 		const output = binToHex(current);
 		console.log(`After initial permutation: ${output.slice(0, 8)} ${output.slice(8)}`);
@@ -376,3 +377,5 @@ function decrypt(input: string, key: string){
 
 // Output should be 'da02ce3a89ecac3b'
 console.log(encrypt('02468aceeca86420', '0f1571c947d9e859'));
+
+console.log(decrypt('da02ce3a89ecac3b', '0f1571c947d9e859'));
