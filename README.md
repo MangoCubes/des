@@ -1,6 +1,6 @@
 # DES Encryption/Decryption
-A simple Typescript code that uses DES to encrypts/decrypts a single block of 64 bits
-There are two examples in this code, and verbose option is set to true by default
+A simple Typescript code that uses DES to encrypts/decrypts a single block of 64 bits. There are two examples in this code, and verbose option is set to true by default.
+
 Verbose option shows you the output of the following:
  - Initial permutation
  - Subkey for each round
